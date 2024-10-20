@@ -68,9 +68,7 @@ const NewIssuePage = () => {
             </>
           )}
         />
-        <Button disabled={isSubmitting}>
-          Submit New Issue {isSubmitting && <Spinner />}
-        </Button>
+        <Button disabled={isSubmitting}>Submit New Issue { isSubmitting && <Spinner />}</Button>
       </form>
     </div>
   );
