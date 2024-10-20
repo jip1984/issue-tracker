@@ -1,21 +1,23 @@
 "use client";
 
-import { Button, Callout, CalloutRoot, TextField } from "@radix-ui/themes";
+import { Button, Callout, CalloutRoot, Text, TextField } from "@radix-ui/themes";
 import SimpleMDE from "react-simplemde-editor";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { zodResolver } from '@hookform/resolvers/zod'
+import { issueSchema } from "@/app/validationSchema";
+import { z } from "zod";
 
-interface IssueForm {
-  title: string;
-  description: string;
-}
+type IssueForm = z.infer<typeof issueSchema>
 
 const NewIssuePage = () => {
   const router = useRouter();
-  const { register, control, handleSubmit } = useForm<IssueForm>();
+  const { register, control, handleSubmit, formState: {errors} } = useForm<IssueForm>({
+    resolver: zodResolver(issueSchema)
+  });
   const [error, setError] = useState("");
 
   return (
@@ -32,24 +34,28 @@ const NewIssuePage = () => {
             await axios.post("/api/issues", data);
             router.push("/issues");
           } catch (error) {
-            setError("An unsexpected error occured");
+            setError("An unexpected error occurred");
           }
         })}
       >
         <TextField.Root>
           <TextField.Input placeholder="Title" {...register("title")} />
         </TextField.Root>
+        {errors.title && <Text color="red" as="p">{errors.title.message}</Text>}
         <Controller
           name="description"
           control={control}
           render={({ field }) => (
-            <SimpleMDE placeholder="Description" {...field} />
+            <>
+              <SimpleMDE placeholder="Description" {...field} />
+              {errors.description && <Text color="red" as="p">{errors.description.message}</Text>}
+            </>
           )}
         />
         <Button>Submit New Issue</Button>
       </form>
     </div>
   );
-};
+}
 
 export default NewIssuePage;
