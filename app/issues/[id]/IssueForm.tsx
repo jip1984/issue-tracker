@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Callout,
-  TextField
-} from "@radix-ui/themes";
+import { Button, Callout, TextField } from "@radix-ui/themes";
 import SimpleMDE from "react-simplemde-editor";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
@@ -20,7 +16,7 @@ import { Issue } from "@prisma/client";
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
-const IssueForm = ({issue}: {issue?: Issue}) => {
+const IssueForm = ({ issue }: { issue?: Issue }) => {
   const router = useRouter();
   const {
     register,
@@ -45,7 +41,8 @@ const IssueForm = ({issue}: {issue?: Issue}) => {
         onSubmit={handleSubmit(async (data) => {
           try {
             setIsSubmitting(true);
-            await axios.post("/api/issues", data);
+            if (issue) await axios.patch("/api/issues/" + issue.id, data);
+            else await axios.post("/api/issues", data);
             router.push("/issues");
           } catch (error) {
             setIsSubmitting(false);
@@ -54,7 +51,11 @@ const IssueForm = ({issue}: {issue?: Issue}) => {
         })}
       >
         <TextField.Root>
-          <TextField.Input defaultValue={issue?.title} placeholder="Title" {...register("title")} />
+          <TextField.Input
+            defaultValue={issue?.title}
+            placeholder="Title"
+            {...register("title")}
+          />
         </TextField.Root>
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
         <Controller
@@ -68,7 +69,10 @@ const IssueForm = ({issue}: {issue?: Issue}) => {
             </>
           )}
         />
-        <Button disabled={isSubmitting}>Submit New Issue { isSubmitting && <Spinner />}</Button>
+        <Button disabled={isSubmitting}>
+          {issue ? "UpdateIssue" : "Submit New Issue"}{" "}
+          {isSubmitting && <Spinner />}
+        </Button>
       </form>
     </div>
   );
